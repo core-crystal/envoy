@@ -160,6 +160,7 @@ EXTENSIONS = {
     #
 
     "envoy.filters.udp.dns_filter":                     "//source/extensions/filters/udp/dns_filter:config",
+    "envoy.filters.udp.source_prepend":                 "//source/extensions/filters/udp/source_prepend:config",
     "envoy.filters.udp_listener.udp_proxy":             "//source/extensions/filters/udp/udp_proxy:config",
 
     #

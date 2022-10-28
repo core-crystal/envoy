@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package envoy.extensions.filters.udp.source_prepend.v3;
+
+import "google/protobuf/wrappers.proto";
+
+import "udpa/annotations/status.proto";
+import "udpa/annotations/versioning.proto";
+
+option java_package = "io.envoyproxy.envoy.extensions.filters.udp.source_prepend.v3";
+option java_outer_classname = "SourcePrependProto";
+option java_multiple_files = true;
+option go_package = "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/udp/source_prepend/v3;source_prependv3";
+option (udpa.annotations.file_status).package_version_status = ACTIVE;
+
+// [#protodoc-title: Source Prepend Filter]
+// Automatically writes the first two bytes as the original source port.
+// [#extension: envoy.filters.udp.source_prepend]
+
+message SourcePrependConfig {
+  option (udpa.annotations.versioning).previous_message_type =
+      "envoy.config.filter.listener.udp.v2.SourcePrependConfig";
+
+  // If we should actually prepend source data, default is true.
+  google.protobuf.BoolValue enable = 1;
+}

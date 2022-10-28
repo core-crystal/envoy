@@ -321,6 +321,31 @@ elif [[ "$CI_TARGET" == "bazel.asan" ]]; then
     #   //test/extensions/transport_sockets/tls/integration:ssl_integration_test
   # fi
   exit 0
+elif [[ "$CI_TARGET" == "bazel.asan.v4" ]]; then
+  setup_clang_toolchain
+  BAZEL_BUILD_OPTIONS+=(-c dbg "--config=clang-asan" "--build_tests_only")
+  echo "bazel ASAN/UBSAN debug build with tests"
+  echo "Building and testing envoy tests ${TEST_TARGETS[*]}"
+  bazel_with_collection test "${BAZEL_BUILD_OPTIONS[@]}" "${TEST_TARGETS[@]}" --test_env=ENVOY_IP_TEST_VERSIONS=v4only
+  if [ "${ENVOY_BUILD_FILTER_EXAMPLE}" == "1" ]; then
+    echo "Building and testing envoy-filter-example tests..."
+    pushd "${ENVOY_FILTER_EXAMPLE_SRCDIR}"
+    bazel_with_collection test "${BAZEL_BUILD_OPTIONS[@]}" "${ENVOY_FILTER_EXAMPLE_TESTS[@]}" --test_env=ENVOY_IP_TEST_VERSIONS=v4only
+    popd
+  fi
+
+  # TODO(mattklein123): This part of the test is now flaky in CI and it's unclear why, possibly
+  # due to sandboxing issue. Debug and enable it again.
+  # if [ "${CI_SKIP_INTEGRATION_TEST_TRAFFIC_TAPPING}" != "1" ] ; then
+    # Also validate that integration test traffic tapping (useful when debugging etc.)
+    # works. This requires that we set TAP_PATH. We do this under bazel.asan to
+    # ensure a debug build in CI.
+    # echo "Validating integration test traffic tapping..."
+    # bazel_with_collection test "${BAZEL_BUILD_OPTIONS[@]}" \
+    #   --run_under=@envoy//bazel/test:verify_tap_test.sh \
+    #   //test/extensions/transport_sockets/tls/integration:ssl_integration_test
+  # fi
+  exit 0
 elif [[ "$CI_TARGET" == "bazel.tsan" ]]; then
   setup_clang_toolchain
   echo "bazel TSAN debug build with tests"
@@ -333,6 +358,18 @@ elif [[ "$CI_TARGET" == "bazel.tsan" ]]; then
     popd
   fi
   exit 0
+elif [[ "$CI_TARGET" == "bazel.tsan.v4" ]]; then
+  setup_clang_toolchain
+  echo "bazel TSAN debug build with tests"
+  echo "Building and testing envoy tests ${TEST_TARGETS[*]}"
+  bazel_with_collection test --config=rbe-toolchain-tsan "${BAZEL_BUILD_OPTIONS[@]}" -c dbg --build_tests_only "${TEST_TARGETS[@]}" --test_env=ENVOY_IP_TEST_VERSIONS=v4only
+  if [ "${ENVOY_BUILD_FILTER_EXAMPLE}" == "1" ]; then
+    echo "Building and testing envoy-filter-example tests..."
+    pushd "${ENVOY_FILTER_EXAMPLE_SRCDIR}"
+    bazel_with_collection test "${BAZEL_BUILD_OPTIONS[@]}" -c dbg --config=clang-tsan "${ENVOY_FILTER_EXAMPLE_TESTS[@]}" --test_env=ENVOY_IP_TEST_VERSIONS=v4only
+    popd
+  fi
+  exit 0
 elif [[ "$CI_TARGET" == "bazel.msan" ]]; then
   ENVOY_STDLIB=libc++
   setup_clang_toolchain
@@ -341,6 +378,15 @@ elif [[ "$CI_TARGET" == "bazel.msan" ]]; then
   echo "bazel MSAN debug build with tests"
   echo "Building and testing envoy tests ${TEST_TARGETS[*]}"
   bazel_with_collection test "${BAZEL_BUILD_OPTIONS[@]}" -- "${TEST_TARGETS[@]}"
+  exit 0
+elif [[ "$CI_TARGET" == "bazel.msan.v4" ]]; then
+  ENVOY_STDLIB=libc++
+  setup_clang_toolchain
+  # rbe-toolchain-msan must comes as first to win library link order.
+  BAZEL_BUILD_OPTIONS=("--config=rbe-toolchain-msan" "${BAZEL_BUILD_OPTIONS[@]}" "-c" "dbg" "--build_tests_only")
+  echo "bazel MSAN debug build with tests"
+  echo "Building and testing envoy tests ${TEST_TARGETS[*]}"
+  bazel_with_collection test "${BAZEL_BUILD_OPTIONS[@]}" --test_env=ENVOY_IP_TEST_VERSIONS=v4only -- "${TEST_TARGETS[@]}"
   exit 0
 elif [[ "$CI_TARGET" == "bazel.dev" ]]; then
   setup_clang_toolchain
@@ -351,6 +397,16 @@ elif [[ "$CI_TARGET" == "bazel.dev" ]]; then
 
   echo "Testing ${TEST_TARGETS[*]}"
   bazel test "${BAZEL_BUILD_OPTIONS[@]}" -c fastbuild "${TEST_TARGETS[@]}"
+  exit 0
+elif [[ "$CI_TARGET" == "bazel.dev.v4" ]]; then
+  setup_clang_toolchain
+  # This doesn't go into CI but is available for developer convenience.
+  echo "bazel fastbuild build with tests..."
+  echo "Building..."
+  bazel_envoy_binary_build fastbuild
+
+  echo "Testing ${TEST_TARGETS[*]}"
+  bazel test "${BAZEL_BUILD_OPTIONS[@]}" -c fastbuild "${TEST_TARGETS[@]}" --test_env=ENVOY_IP_TEST_VERSIONS=v4only
   exit 0
 elif [[ "$CI_TARGET" == "bazel.dev.contrib" ]]; then
   setup_clang_toolchain

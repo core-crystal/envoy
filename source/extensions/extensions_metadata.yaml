@@ -642,6 +642,13 @@ envoy.filters.udp.dns_filter:
   status: alpha
   type_urls:
   - envoy.extensions.filters.udp.dns_filter.v3.DnsFilterConfig
+envoy.filters.udp.source_prepend:
+  categories:
+  - envoy.filters.udp_listener
+  security_posture: robust_to_untrusted_downstream_and_upstream
+  status: alpha
+  type_urls:
+  - envoy.extensions.filters.udp.source_prepend.v3.SourcePrependConfig
 envoy.filters.udp_listener.udp_proxy:
   categories:
   - envoy.filters.udp_listener
