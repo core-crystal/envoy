@@ -586,6 +586,13 @@ envoy.filters.network.sni_dynamic_forward_proxy:
   status: alpha
   type_urls:
   - envoy.extensions.filters.network.sni_dynamic_forward_proxy.v3.FilterConfig
+envoy.filters.network.source_prepend:
+  categories:
+  - envoy.filters.network
+  security_posture: robust_to_untrusted_downstream_and_upstream
+  status: stable
+  type_urls:
+  - envoy.extensions.filters.network.source_prepend.v3.SourcePrependConfig
 envoy.filters.network.tcp_proxy:
   categories:
   - envoy.filters.network

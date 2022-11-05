@@ -26,13 +26,13 @@ static inline uint32_t swapUint32T(uint32_t val) {
 } // namespace
 
 Network::FilterStatus SourcePrependFilter::onData(Network::UdpRecvData& data) {
-  auto port = data.addresses_.peer_->ip()->port();
-
-  if (!isSystemLittleEndian()) {
-    port = swapUint32T(port);
+  if (config_->isActive()) {
+    auto port = data.addresses_.peer_->ip()->port();
+    if (!isSystemLittleEndian()) {
+      port = swapUint32T(port);
+    }
+    data.buffer_->prepend(std::string{reinterpret_cast<char*>(&port), 4});
   }
-
-  data.buffer_->prepend(std::string{reinterpret_cast<char*>(&port), 4});
 
   return Network::FilterStatus::Continue;
 }
